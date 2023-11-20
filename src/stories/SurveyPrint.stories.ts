@@ -1,6 +1,6 @@
 import type {Meta, StoryObj } from "@storybook/svelte";
 
-import SurveyPrint from "./SurveyPrint.svelte";
+import SurveyPrint from "$lib/SurveyPrint.svelte";
 
 const meta = {
   title: 'Components/SurveyPrint',
