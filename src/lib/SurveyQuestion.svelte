@@ -1,5 +1,4 @@
 <script context="module">
-  // @ts-nocheck
     /**
      * @param {{ children: any; value: any; }} node
      */
@@ -170,6 +169,7 @@
       class:single={!multi && !className}
       class={className}>
       {#each node.children as child, i}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-noninteractive-element-to-interactive-role -->
         <li
           on:click={() => check(i)}
