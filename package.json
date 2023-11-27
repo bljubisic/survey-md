@@ -48,5 +48,9 @@
     "vite": "^4.0.0",
     "vitest": "^0.25.3"
   },
+  "dependencies": {
+    "unified": "^8.4.2",
+		"remark-parse": "^7.0.2"
+  },
   "type": "module"
 }
