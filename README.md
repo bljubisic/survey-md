@@ -1,6 +1,6 @@
 # What is Survey-md
 
-Survey-md is attempt to simplify creating and using surveys through the code. As a starting point, I used [surv.app project](https://surv.app) which provided the same functionality but on server side. I am trying to offer something like this out of necessity to use similar library for dynamicaly survey generation using markdown coming from BE. md stands for Markdown as I am using markdown language to describe the surveys. All results are stored in context object and you can easily access them using context["question_name"]. There are couple of rules how to do that:
+Survey-md is an attempt to simplify creating and using surveys through the code. As a starting point, I used [surv.app project](https://surv.app) which provided the same functionality but on server side. I am trying to offer something like this out of necessity to use similar library for dynamically survey generation using markdown coming from BE. md stands for Markdown as I am using markdown language to describe the surveys. All results are stored in context object and you can easily access them using context["question_name"]. There are couple of rules how to do that:
 
 - Pages are delimited by using standard Markdown delimiter, either `***` or `---`
 - Questions are marked with question mark as the first character on the line, following with the question variable `?question_name`
@@ -16,10 +16,11 @@ Survey-md is attempt to simplify creating and using surveys through the code. As
 
 # Using Survey-md
 
-Using survey-md is simple, you should just add the survey-md in your package.json. After that all of the necessary tools would be available to you. Most simple way of usage is creating your `+page.svelte` together with `+page.js` file. `+page.js` would be used for parsing the markdown and providong the resulting data to the `+page.svelte` where it can be used. Sample `+page.js` should be something like this:
+Using survey-md is simple, you should just add the survey-md in your package.json. After that all of the necessary tools would be available to you. Most simple way of usage is creating your `+page.svelte` together with `+page.js` file. `+page.js` would be used for parsing the markdown and providing the resulting data to the `+page.svelte` where it can be used. Sample `+page.js` should be something like this:
 
 ```
 /** @type {import('./$types').PageLoad} */
+import md from 'survey-md/md'
 export async function load({params}) {
   const text = "## Hi! Please pick a number.\n  (We shuffle them *every time*)\n\n?mynumber shuffle\n- 1337\n- [42](https://www.google.com/search?q=42)\n- 7±2\n\n@ mynumber\n[Submit](+)";
   const survey = await md(text);
