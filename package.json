@@ -1,6 +1,6 @@
 {
   "name": "survey-md",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/bljubisic/survey-md.git"
@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "unified": "^8.4.2",
-		"remark-parse": "^7.0.2"
+		"remark-parse": "11.0.0"
   },
   "type": "module"
 }
