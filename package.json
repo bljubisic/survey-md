@@ -38,14 +38,16 @@
   },
   "dependencies": {
     "unified": "^8.4.2",
-    "remark-parse": "^7.0.2",
+    "remark-parse": "^7.0.2"
+  },
+  "peerDependencies": {
     "svelte": "^4.2.8"
   },
   "type": "module",
   "exports": {
     ".": {
-      "types": "./package/index.d.ts",
-      "svelte": "./package/index.js"
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js"
     }
   }
 }
