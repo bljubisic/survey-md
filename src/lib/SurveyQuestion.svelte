@@ -78,11 +78,12 @@
           }
         }
       } else if(matrix) {
+        // console.log(Object.keys(checked).filter((key) => (key.includes(i+".") && checked[key] === true)));
         if (checked[i+"."+j]) {
           // @ts-ignore
           checked[i+"."+j] = false;
         } else {
-          if(Object.keys(checked).filter((key) => (key.includes(i+"") && checked[key] === true)).length === 0) { 
+          if(Object.keys(checked).filter((key) => (key.includes(i+".") && checked[key] === true)).length === 0) { 
             // @ts-ignore
             checked[i+"."+j] = true;
           }
