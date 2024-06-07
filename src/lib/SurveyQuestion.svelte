@@ -43,7 +43,6 @@
     let matrix = node.type === "list" && params && params.matrix && params.matrix.split(",");
     const textValues = node.children.map(flatten);
 
-    console.log(multi, matrix, (matrix !== undefined) ? matrix.length : 0);
   
     let checked = {};
     const selected = context[node.question.name];
@@ -79,9 +78,7 @@
           }
         }
       } else if(matrix) {
-        console.log(Object.keys(checked));
         Object.keys(checked).filter((key) => key.includes("i"));
-        console.log(Object.keys(checked).filter((key) => (key.includes(i+"") && checked[key] === true)));
         if (checked[i+"."+j]) {
           // @ts-ignore
           checked[i+"."+j] = false;
