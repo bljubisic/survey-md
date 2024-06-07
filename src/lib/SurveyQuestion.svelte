@@ -78,7 +78,6 @@
           }
         }
       } else if(matrix) {
-        Object.keys(checked).filter((key) => key.includes("i"));
         if (checked[i+"."+j]) {
           // @ts-ignore
           checked[i+"."+j] = false;
