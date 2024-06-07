@@ -102,7 +102,6 @@ function transformer(tree) {
  */
 function tokenizeQuestion(eat, value, silent) {
   const match = /^\? *(\w[\w]*) *(.*)/.exec(value);
-  console.log("tokenizeQuestion", match);
   if (match) {
     if (silent) {
       return true;
