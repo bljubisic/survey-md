@@ -1,19 +1,19 @@
-<script context="module">
+<script lang="ts" context="module">
 // @ts-nocheck
 
     /**
      * @param {{ children: any; value: any; }} node
      */
-    function flatten(node) {
+    function flatten(node: { children: any; value: any; }) {
       return (node.children || [])
-        .reduce((/** @type {string} */ text, /** @type {{ children: any; value: any; }} */ node) => text + " " + flatten(node), node.value || "")
+        .reduce((text: string, /** @type {{ children: any; value: any; }} */ node: { children: any; value: any; }) => text + " " + flatten(node), node.value || "")
         .trim();
     }
   
     /**
      * @param {string | any[]} array
      */
-    function shuffleArray(array) {
+    function shuffleArray(array: string | any[]) {
       for (let i = array.length - 1, j; i > 0; i--) {
         j = Math.floor(Math.random() * (i + 1));
         // @ts-ignore
@@ -22,17 +22,11 @@
     }
   </script>
   
-  <script>
+  <script lang="ts">
     import SurveyNode from "./SurveyNode.svelte";
   
-    /**
-     * @type {{ [x: string]: any; }}
-     */
-     export let context;
-    /**
-     * @type {{ question?: any; type?: any; children: any; value?: any; }}
-     */
-     export let node;
+    export let context;
+    export let node: any;
     export let next = () => {};
   
     const { params } = node.question;
@@ -44,7 +38,7 @@
     const textValues = node.children.map(flatten);
 
   
-    let checked = {};
+    let checked: {[key: string | number] : any} = {};
     const selected = context[node.question.name];
   
     if (selected === undefined) {
@@ -52,7 +46,7 @@
     }
   
     if (Array.isArray(selected)) {
-      textValues.forEach((/** @type {any} */ v, /** @type {string | number} */ i) => {
+      textValues.forEach((v: any, i: string | number) => {
         // @ts-ignore
         checked[i] = selected.includes(v);
       });
@@ -63,7 +57,7 @@
     /**
      * @param {number} i
      */
-    function check(i, j=undefined) {
+    function check(i: string | number, j: number | undefined =undefined) {
       if (multi) {
         // @ts-ignore
         if (checked[i]) {
@@ -78,13 +72,17 @@
           }
         }
       } else if(matrix) {
-        // console.log(Object.keys(checked).filter((key) => (key.includes(i+".") && checked[key] === true)));
         if (checked[i+"."+j]) {
           // @ts-ignore
           checked[i+"."+j] = false;
         } else {
           if(Object.keys(checked).filter((key) => (key.includes(i+".") && checked[key] === true)).length === 0) { 
             // @ts-ignore
+            checked[i+"."+j] = true;
+          } else {
+            Object.keys(checked).filter((key) => key.includes(i+".")).forEach((key) => {
+              checked[key] = false;
+            });
             checked[i+"."+j] = true;
           }
         }
@@ -106,7 +104,7 @@
     /**
      * @param {any} val
      */
-    function save(val) {
+    function save(val: any) {
       context[node.question.name] = val;
     }
   
