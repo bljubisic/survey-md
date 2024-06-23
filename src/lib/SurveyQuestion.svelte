@@ -72,10 +72,7 @@
           }
         }
       } else if(matrix) {
-        if (checked[i+"."+j]) {
-          // @ts-ignore
-          checked[i+"."+j] = false;
-        } else {
+        if (!checked[i+"."+j]) {
           if(Object.keys(checked).filter((key) => (key.includes(i+".") && checked[key] === true)).length === 0) { 
             // @ts-ignore
             checked[i+"."+j] = true;
