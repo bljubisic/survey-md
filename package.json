@@ -1,14 +1,13 @@
 {
   "name": "survey-md",
-  "version": "0.0.7",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bljubisic/survey-md.git"
+    "url": "git+https://github.com/bljubisic/survey-md.git"
   },
   "scripts": {
     "dev": "vite dev",
     "build": "svelte-kit sync && svelte-package",
-    "prepublishOnly": "echo 'Did you mean to publish `./package/`, instead of `./`?' && exit 1",
     "test": "playwright test",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -45,9 +44,46 @@
   },
   "type": "module",
   "exports": {
+    "./SurveyNode.svelte": {
+      "types": "./dist/SurveyNode.svelte.d.ts",
+      "svelte": "./dist/SurveyNode.svelte"
+    },
+    "./SurveyPrint.svelte": {
+      "types": "./dist/SurveyPrint.svelte.d.ts",
+      "svelte": "./dist/SurveyPrint.svelte"
+    },
+    "./SurveyQuestion.svelte": {
+      "types": "./dist/SurveyQuestion.svelte.d.ts",
+      "svelte": "./dist/SurveyQuestion.svelte"
+    },
+    "./expressions.js": {
+      "types": "./dist/expressions.d.ts",
+      "svelte": "./dist/expressions.js"
+    },
+    "./md.js": {
+      "types": "./dist/md.d.ts",
+      "svelte": "./dist/md.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "svelte": "./dist/index.js"
     }
-  }
+  },
+  "description": "Survey-md is an attempt to simplify creating and using surveys through the code. As a starting point, I used [surv.app project](https://surv.app) which provided the same functionality but on server side. I am trying to offer something like this out of necessity to use similar library for dynamically survey generation using markdown coming from BE. md stands for Markdown as I am using markdown language to describe the surveys. All results are stored in context object and you can easily access them using context[\"question_name\"]. There are couple of rules how to do that:\n- Pages are delimited by using standard Markdown delimiter, either `***` or `---`\n- Questions are marked with question mark as the first character on the line, following with the question variable `?question_name`\n- Closed questions are always followed with the list of available items, which is described using normal Markdown syntax\n- Opened questions are followed with placeholder text\n- If you would like to display answer on the survey, you can do that by enclosing the question_name within curly brackets, `{question_name}`\n- Also, in addition to this, you can add dynamic question selection by using regular Javascript expressions enclosed in curly brackets\n- You can also specify max number of answers question can provide with using `max=num` and `min=num` after the question_name\n- You can specify conditions for displaying elements of the surveys, like submit buttons or even displaying whole pages. Condition is specified using `@` as the first character on the line. It should be followed by conditional javascript expression.\n- Lists of the available answers can be shuffled by using `shuffle` after the question_name in the question description\n- Numbers can be entered by using selection box, using `min=num max=num` right after the question_name. The question type should be opened question.\n- Style can also be overwritten by using `<style>` html tag within your markdown snippet.",
+  "bugs": {
+    "url": "https://github.com/bljubisic/survey-md/issues"
+  },
+  "homepage": "https://github.com/bljubisic/survey-md#readme",
+  "main": "svelte.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [
+    "Survey",
+    "markdown",
+    "form"
+  ],
+  "author": "Bratislav Ljubisic",
+  "license": "ISC",
+  "files": ["dist"]
 }
