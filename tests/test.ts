@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('index page has expected h1', async ({ page }) => {
+test('index page has expected h2 with survey text', async ({ page }) => {
 	await page.goto('/');
-	expect(await page.textContent('h1')).toBe('Welcome to SvelteKit');
+	await expect(page.locator('h2')).toContainText('Hi! Please pick a number.');
 });

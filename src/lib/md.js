@@ -1,185 +1,257 @@
-import unified from "unified";
-import markdown from "remark-parse";
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
 
-const questionType = "question";
-const conditionType = "condition";
-const printType = "print";
-
-/**
- * @this {any}
- */
-function survey() {
-  const {
-    blockMethods,
-    blockTokenizers,
-    inlineMethods,
-    inlineTokenizers,
-  } = this.Parser.prototype;
-  blockMethods.splice(blockMethods.indexOf("setextHeading"), 1);
-  blockTokenizers.question = tokenizeQuestion;
-  blockTokenizers.condition = tokenizeCondition;
-  blockMethods.splice(
-    blockMethods.indexOf("paragraph"),
-    0,
-    questionType,
-    conditionType
-  );
-  inlineTokenizers.print = tokenizePrint;
-  inlineMethods.splice(inlineMethods.indexOf("text"), 0, printType);
-  return transformer;
-}
-
-/**
- * @param {string | any[]} nodes
- */
-function mergeHTML(nodes) {
-  let len = nodes.length;
-  let node, html;
-  const merged = [];
-  for (let i = 0; i < len; i++) {
-    node = nodes[i];
-    if (node.type === "html" || node.type === "text") {
-      if (html) {
-        html.value += node.value;
-      } else {
-        html = node;
-        merged.push(node);
-      }
-    } else {
-      html = null;
-      merged.push(node);
-    }
-  }
-  return merged;
-}
-
-/**
- * @param {{ children: any; }} tree
- */
-function transformer(tree) {
-  const pagebreakType = "thematicBreak";
-  const { children } = tree;
-  let len = children.length;
-  let node, qst, cond;
-  let page = { type: "page", children: [] };
-  const pages = [];
-  for (let i = 0; i < len; i++) {
-    node = children[i];
-    if (node.type === questionType) {
-      qst = node;
-    } else if (node.type === conditionType) {
-      cond = node;
-    } else {
-      if (qst) {
-        node[questionType] = qst;
-        qst = null;
-      }
-      if (cond) {
-        node[conditionType] = cond;
-        cond = null;
-      }
-      if (node.type === pagebreakType) {
-        pages.push(page);
-        page = { ...node, type: "page", children: [] };
-      } else {
-        if (node.children) {
-          node.children = mergeHTML(node.children);
-        }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        page.children.push(node);
-      }
-    }
-  }
-  pages.push(page);
-  return pages;
-}
-
-/**
- * @param {(arg0: string) => { (arg0: { type: string; name: string; params: {}; }): any; new (): any; }} eat
- * @param {string} value
- * @param {any} silent
- */
-function tokenizeQuestion(eat, value, silent) {
-  const match = /^\? *(\w[\w]*) *(.*)/.exec(value);
-  if (match) {
-    if (silent) {
-      return true;
-    }
-    return eat(match[0])({
-      type: questionType,
-      name: match[1],
-      params: parseAttrs(match[2]),
-    });
-  }
-}
+const questionType = 'question';
+const conditionType = 'condition';
+const printType = 'print';
 
 const attrsRx = /((\w+) *= *"([^"]*))|((\w+) *= *([^ ]+))|(\w+)/g;
+
 /**
+ * Parse attributes from a string
  * @param {string} str
+ * @returns {{ [key: string]: string | boolean }}
  */
 function parseAttrs(str) {
-  const attrs = {};
-  let m;
-  do {
-    m = attrsRx.exec(str);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (m) attrs[m[2] || m[5] || m[7]] = m[7] ? true : m[3] || m[6];
-  } while (m);
-  return attrs;
+	/** @type {{ [key: string]: string | boolean }} */
+	const attrs = {};
+	let m;
+	attrsRx.lastIndex = 0; // Reset regex state
+	do {
+		m = attrsRx.exec(str);
+		if (m) {
+			const key = m[2] || m[5] || m[7];
+			attrs[key] = m[7] ? true : m[3] || m[6];
+		}
+	} while (m);
+	return attrs;
 }
 
 /**
- * @param {(arg0: string) => { (arg0: { type: string; expr: string; }): any; new (): any; }} eat
- * @param {string} value
- * @param {any} silent
+ * Merge consecutive HTML and text nodes
+ * @param {any[]} nodes
  */
-function tokenizeCondition(eat, value, silent) {
-  const match = /^@ *(.*)/.exec(value);
-  if (match) {
-    if (silent) {
-      return true;
-    }
-    return eat(match[0])({
-      type: conditionType,
-      expr: match[1],
-    });
-  }
+function mergeHTML(nodes) {
+	if (!nodes) return nodes;
+	const merged = [];
+	let html = null;
+
+	for (let i = 0; i < nodes.length; i++) {
+		const node = nodes[i];
+		if (node.type === 'html' || node.type === 'text') {
+			if (html) {
+				html.value += node.value;
+			} else {
+				html = { ...node };
+				merged.push(html);
+			}
+		} else {
+			html = null;
+			merged.push(node);
+		}
+	}
+	return merged;
 }
 
 /**
- * @param {(arg0: string) => { (arg0: { type: string; expr: string; }): any; new (): any; }} eat
- * @param {string} value
- * @param {any} silent
+ * Process text nodes to extract {variable} print expressions
+ * @param {any} node
  */
-function tokenizePrint(eat, value, silent) {
-  const match = /^\{([^}]+)\}/.exec(value);
-  if (match) {
-    if (silent) {
-      return true;
-    }
-    return eat(match[0])({
-      type: printType,
-      expr: match[1],
-    });
-  }
-}
-tokenizePrint.notInLink = true;
-tokenizePrint.locator = function (/** @type {string | string[]} */ value, /** @type {any} */ fromIndex) {
-  return value.indexOf("{", fromIndex);
-};
+function processPrintExpressions(node) {
+	if (node.type === 'text' && node.value) {
+		const parts = [];
+		let lastIndex = 0;
+		const printRegex = /\{([^}]+)\}/g;
+		let match;
 
-const p = unified()
-  .use({ settings: { position: false } })
-  .use(markdown)
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  .use(survey);
+		while ((match = printRegex.exec(node.value)) !== null) {
+			// Add text before the match
+			if (match.index > lastIndex) {
+				parts.push({
+					type: 'text',
+					value: node.value.substring(lastIndex, match.index)
+				});
+			}
+			// Add the print node
+			parts.push({
+				type: printType,
+				expr: match[1]
+			});
+			lastIndex = match.index + match[0].length;
+		}
+
+		// Add remaining text
+		if (lastIndex < node.value.length) {
+			parts.push({
+				type: 'text',
+				value: node.value.substring(lastIndex)
+			});
+		}
+
+		return parts.length > 0 ? parts : [node];
+	}
+	return [node];
+}
 
 /**
- * @param {import("vfile").VFileCompatible} md
+ * Unified plugin to transform markdown AST for survey syntax
  */
-export default function (md) {
-  return p.run(p.parse(md));
+function survey() {
+	return (/** @type {any} */ tree) => {
+		/** @type {any[]} */
+		const newChildren = [];
+		let pendingQuestion = null;
+		let pendingCondition = null;
+
+		// First pass: identify questions and conditions
+		for (let i = 0; i < tree.children.length; i++) {
+			const node = tree.children[i];
+
+			// Check for question syntax: ?questionName params placeholder
+			if (node.type === 'paragraph' && node.children && node.children[0]) {
+				const firstChild = node.children[0];
+				if (firstChild.type === 'text' && firstChild.value) {
+					const questionMatch = /^\? *(\w+) *(.*)/.exec(firstChild.value);
+					if (questionMatch) {
+						const remainingText = questionMatch[2].trim();
+
+						// Extract parameters and placeholder text
+						// Parameters are: key=value pairs or known flags (shuffle, email, etc.)
+						// Strategy: match key=value patterns and known single-word params at the start
+						let paramString = '';
+						let placeholderText = remainingText;
+
+						// First, extract key=value pairs
+						const keyValuePattern = /(\w+)=("[^"]*"|'[^']*'|[^\s]+)/g;
+						const keyValueMatches = [];
+						let match;
+						while ((match = keyValuePattern.exec(remainingText)) !== null) {
+							keyValueMatches.push({ match: match[0], index: match.index });
+						}
+
+						// Also check for known single-word parameters at the beginning
+						const knownParams = ['shuffle', 'email'];
+						const firstWord = remainingText.split(/\s+/)[0];
+						let paramEndIndex = 0;
+
+						if (knownParams.includes(firstWord)) {
+							paramString = firstWord;
+							paramEndIndex = firstWord.length;
+						}
+
+						// Add key=value params that appear before regular text
+						keyValueMatches.forEach((kv) => {
+							if (kv.index <= paramEndIndex + 10) {
+								// Close to start
+								paramString += (paramString ? ' ' : '') + kv.match;
+								paramEndIndex = Math.max(paramEndIndex, kv.index + kv.match.length);
+							}
+						});
+
+						// Extract placeholder (text after parameters)
+						if (paramEndIndex > 0) {
+							placeholderText = remainingText.substring(paramEndIndex).trim();
+						}
+
+						const params = parseAttrs(paramString);
+
+						pendingQuestion = {
+							type: questionType,
+							name: questionMatch[1],
+							params: params
+						};
+
+						// If there's placeholder text, create a paragraph node
+						if (placeholderText) {
+							const placeholderNode = {
+								...node,
+								children: [{ type: 'text', value: placeholderText }]
+							};
+							placeholderNode[questionType] = pendingQuestion;
+							pendingQuestion = null;
+							newChildren.push(placeholderNode);
+							continue;
+						}
+
+						continue; // Don't add this node to newChildren
+					}
+
+					const conditionMatch = /^@ *(.*)/.exec(firstChild.value);
+					if (conditionMatch) {
+						pendingCondition = {
+							type: conditionType,
+							expr: conditionMatch[1]
+						};
+						continue; // Don't add this node to newChildren
+					}
+				}
+			}
+
+			// Process the node
+			const processedNode = { ...node };
+
+			// Attach pending question or condition
+			if (pendingQuestion) {
+				processedNode[questionType] = pendingQuestion;
+				pendingQuestion = null;
+			}
+			if (pendingCondition) {
+				processedNode[conditionType] = pendingCondition;
+				pendingCondition = null;
+			}
+
+			// Process children for print expressions
+			if (processedNode.children) {
+				const newNodeChildren = [];
+				for (const child of processedNode.children) {
+					const processed = processPrintExpressions(child);
+					newNodeChildren.push(...processed);
+				}
+				processedNode.children = mergeHTML(newNodeChildren);
+			}
+
+			newChildren.push(processedNode);
+		}
+
+		tree.children = newChildren;
+	};
+}
+
+/**
+ * Transform the tree into pages
+ * @param {any} tree
+ */
+function transformToPages(tree) {
+	const pagebreakType = 'thematicBreak';
+	const { children } = tree;
+	/** @type {any[]} */
+	const pages = [];
+	/** @type {{ type: string; children: any[] }} */
+	let page = { type: 'page', children: [] };
+
+	for (let i = 0; i < children.length; i++) {
+		const node = children[i];
+
+		if (node.type === pagebreakType) {
+			pages.push(page);
+			page = { ...node, type: 'page', children: [] };
+		} else {
+			page.children.push(node);
+		}
+	}
+
+	pages.push(page);
+	return pages;
+}
+
+const processor = unified().use(remarkParse).use(survey);
+
+/**
+ * Parse markdown with survey extensions
+ * @param {string} md - Markdown text to parse
+ */
+export default async function (md) {
+	const tree = processor.parse(md);
+	const transformed = await processor.run(tree);
+	return transformToPages(transformed);
 }

@@ -32,12 +32,16 @@ export async function load({params}) {
 	};
 }
 ```
+
 Comment above the function must be there to provide the data to the `+page.svelte`, which should use it like this:
+
 ```
     /** @type {import('./$types').PageData} */
     export let data;
 ```
+
 added somewhere within your `<script>` tag. Normally you would use something like this to display the survey to the users:
+
 ```
 <div class="viewport typo">
   {#each data.post.content as page, i}
@@ -54,4 +58,5 @@ added somewhere within your `<script>` tag. Normally you would use something lik
   {/each}
 </div>
 ```
+
 That should be enough to get you started!

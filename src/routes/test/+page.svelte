@@ -6,26 +6,17 @@
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-	const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
-	function uid() {
-		var id = '';
-		var size = 16;
-		while (size--) id += chars[(Math.random() * 62) | 0];
-		return id;
-	}
-
 	function next() {}
 
 	let context = {
-		uid: uid(),
-		started_at: new Date().toISOString().substring(0, 19).replace('T', ' ')
+		uid: 'test-survey-uid',
+		started_at: '2024-01-01 00:00:00'
 	};
 </script>
 
-<div class="viewport typo">
+<div class="viewport typo" data-testid="survey-container">
 	{#each data.post.content as page, i}
-		<div class="view">
+		<div class="view" data-testid="page-{i}">
 			<div class="view-body">
 				{#each page.children as node}
 					<SurveyNode {node} bind:context {next} />

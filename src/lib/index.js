@@ -2,4 +2,4 @@
 import { default as md } from './md.js';
 import { createFunction } from './expressions.js';
 
-export { md, createFunction }
+export { md, createFunction };
